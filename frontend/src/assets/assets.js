@@ -7,8 +7,8 @@ import chat from "./chat.png"
 import code from "./code.png"
 import image from "./image.png"
 import orbital from "./orbital.png"
-import human1 from "./human1.jpg"
-import human2 from "./human2.jpg"
+import Human1 from "./Human1.jpg"
+import Human2 from "./Human2.jpg"
 
 export const assets = {
     logo,
@@ -20,6 +20,6 @@ export const assets = {
     code,
     image,
     orbital,
-    human1,
-    human2
+    Human1,
+    Human2
 }

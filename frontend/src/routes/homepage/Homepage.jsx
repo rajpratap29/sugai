@@ -26,7 +26,7 @@ const Homepage = () => {
           </div>
           <img src={assets.bot} alt="" className="bot" />
           <div className="chat">
-            <img src={typingStatus === "human1" ? assets.human1 : typingStatus === "human2" ? assets.human2 : assets.bot} alt="" />
+            <img src={typingStatus === "Human1" ? assets.Human1 : typingStatus === "Human2" ? assets.Human2 : assets.bot} alt="" />
             <TypeAnimation
               sequence={[
                 "Raj: What is a closure in JavaScript?",

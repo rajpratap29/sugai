@@ -133,6 +133,40 @@ app.get("/api/chats/:id", requireAuth(), async (req, res) => {
   }
 });
 
+app.put("/api/chats/:id", requireAuth(), async (req, res) => {
+  const userId = req.auth.userId;
+
+  const { question, answer, img } = req.body;
+  const newItems = [
+    ...(question
+      ? [{ role: "user", parts: [{ text: question }], ...(img && { img }) }]
+      : []),
+    { role: "model", parts: [{ text: answer }] },
+  ];
+
+  try {
+    const updatedChat = await Chat.updateOne(
+      { _id: req.params.id, userId },
+      {
+        $push: {
+          history: {
+            $each: newItems,
+          },
+        },
+      }
+    );
+
+    res.status(200).send(updatedChat);
+  } catch (err) {
+    console.log(err);
+    res
+      .status(500)
+      .send(
+        "Error while adding conversation! if you are developer of the website check index.js under backend folder"
+      );
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(401).send("Unauthenticated!");

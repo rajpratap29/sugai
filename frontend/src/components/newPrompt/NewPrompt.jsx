@@ -1,6 +1,7 @@
 import "./newPrompt.css";
 import { assets } from "../../assets/assets";
 import { useEffect, useRef, useState } from "react";
+import "./newPrompt.css";
 import Upload from "../upload/Upload";
 import { IKImage } from "imagekitio-react";
 import model from "../../lib/gemini";
@@ -25,7 +26,7 @@ const NewPrompt = ({ data }) => {
       })),
     ],
     generationConfig: {
-      // maxOutputTokens: 1000,
+      // maxOutputTokens: 100,
     },
   });
 
@@ -60,7 +61,12 @@ const NewPrompt = ({ data }) => {
           formRef.current.reset();
           setQuestion("");
           setAnswer("");
-          setImg({ isLoading: false, error: "", dbData: {}, aiData: {} });
+          setImg({
+            isLoading: false,
+            error: "",
+            dbData: {},
+            aiData: {},
+          });
         });
     },
     onError: (err) => {
@@ -117,7 +123,7 @@ const NewPrompt = ({ data }) => {
         <IKImage
           urlEndpoint={import.meta.env.VITE_IMAGE_KIT_ENDPOINT}
           path={img.dbData?.filePath}
-          width={380}
+          width="380"
           transformation={[{ width: 380 }]}
         />
       )}

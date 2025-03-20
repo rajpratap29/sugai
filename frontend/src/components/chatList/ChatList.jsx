@@ -17,7 +17,7 @@ const ChatList = () => {
       <span className="title">DASHBOARD</span>
       <Link to="/dashboard">New Chat</Link>
       <Link to="/">Explore SUG AI</Link>
-      <Link to="/">Contact</Link>
+      <Link to="https://www.linkedin.com/in/rajpratap29/">Contact</Link>
       <hr />
       <span className="title">RECENT CHATS</span>
       <div className="list">
@@ -35,8 +35,10 @@ const ChatList = () => {
       <div className="upgrade">
         <img src={assets.logo} alt="" />
         <div className="texts">
-          <span>Upgrade to SUG AI Pro</span>
-          <span>Get unlimited access to all features</span>
+          <Link to="https://github.com/rajpratap29/" className="linkUpgrade">
+            <div className="span1">Check out my Repo!</div>
+            <div className="span2">Explore the source code of SUG AI</div>
+          </Link>
         </div>
       </div>
     </div>

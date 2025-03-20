@@ -19,14 +19,10 @@ const NewPrompt = ({ data }) => {
 
   const chat = model.startChat({
     history: [
-      {
-        role: "user",
-        parts: [{ text: "Hello" }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "Great to meet you. What would you like to know?" }],
-      },
+      data?.history.map(({ role, parts }) => ({
+        role,
+        parts: [{ text: parts[0].text }],
+      })),
     ],
     generationConfig: {
       // maxOutputTokens: 1000,
@@ -73,7 +69,7 @@ const NewPrompt = ({ data }) => {
   });
 
   const add = async (text, isInitial) => {
-    if(!isInitial) setQuestion(text);
+    if (!isInitial) setQuestion(text);
 
     try {
       const result = await chat.sendMessageStream(
@@ -103,14 +99,14 @@ const NewPrompt = ({ data }) => {
   };
 
   // IN PRODUCTION WE DON'T NEED IT
-  const hasRun = useRef(false)
+  const hasRun = useRef(false);
   useEffect(() => {
-    if(!hasRun.current){
-    if (data?.history?.length === 1) {
-      add(data.history[0].parts[0].text, true);
+    if (!hasRun.current) {
+      if (data?.history?.length === 1) {
+        add(data.history[0].parts[0].text, true);
+      }
     }
-  }
-  hasRun.current = true
+    hasRun.current = true;
   }, []);
 
   return (

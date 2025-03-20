@@ -4,28 +4,22 @@ import path from "path";
 import url, { fileURLToPath } from "url";
 import ImageKit from "imagekit";
 import mongoose from "mongoose";
-import Chat from "../models/chat.js"; // Adjusted path for Vercel
-import UserChats from "../models/userChats.js";
+import Chat from "./models/chat.js";
+import UserChats from "./models/userChats.js";
 import { requireAuth } from "@clerk/express";
 
+const port = process.env.PORT || 3000;
 const app = express();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 app.use(
   cors({
-    origin: [
-      "https://sugai.live",
-      "https://sugai-dfylyj3xy-raj-prataps-projects-24aa0aa6.vercel.app",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Clerk-Session"],
-    credentials: true, // Ensure cookies and auth headers are sent
+    origin: process.env.CLIENT_URL,
+    credentials: true,
   })
 );
-
-
 
 app.use(express.json());
 
@@ -49,19 +43,29 @@ app.get("/api/upload", (req, res) => {
   res.send(result);
 });
 
+// app.get("/api/test", requireAuth(), (req, res) => {
+//   const userId = req.auth.userId;
+//   console.log(userId);
+//   res.send("Success!");
+// });
+
 app.post("/api/chats", requireAuth(), async (req, res) => {
   const userId = req.auth.userId;
   const { text } = req.body;
 
   try {
+    // CREATE A NEW CHAT
     const newChat = new Chat({
       userId: userId,
       history: [{ role: "user", parts: [{ text }] }],
     });
 
     const savedChat = await newChat.save();
+
+    // CHECK IF THE USER CHATS EXIST
     const userChats = await UserChats.find({ userId: userId });
 
+    // IF DOESN'T EXIST CREATE A NEW ONE AND ADD THE CHAT IN THE CHATS ARRAY
     if (!userChats.length) {
       const newUserChats = new UserChats({
         userId: userId,
@@ -75,6 +79,7 @@ app.post("/api/chats", requireAuth(), async (req, res) => {
 
       await newUserChats.save();
     } else {
+      // IF EXISTS, PUSH THE CHATS TO THE EXISTNG ARRAY
       await UserChats.updateOne(
         { userId: userId },
         {
@@ -86,15 +91,15 @@ app.post("/api/chats", requireAuth(), async (req, res) => {
           },
         }
       );
-    }
 
-    res.status(201).send(newChat._id);
+      res.status(201).send(newChat._id);
+    }
   } catch (err) {
     console.log(err);
     res
       .status(500)
       .send(
-        "Error while creating chat! If you are the developer, check `api/index.js` under the backend folder."
+        "Error while creating chat! if you are developer of the website check line 42 to till arround 90 in index.js under backend folder"
       );
   }
 });
@@ -104,13 +109,14 @@ app.get("/api/userchats", requireAuth(), async (req, res) => {
 
   try {
     const userChats = await UserChats.find({ userId: userId });
-    res.status(200).send(userChats[0]?.chats || []);
+
+    res.status(200).send(userChats[0].chats);
   } catch (err) {
     console.log(err);
     res
       .status(500)
       .send(
-        "Error while fetching user chats! Check `api/index.js` under backend folder."
+        "Error while fetching userchat! if you are developer of the website check index.js under backend folder"
       );
   }
 });
@@ -120,21 +126,22 @@ app.get("/api/chats/:id", requireAuth(), async (req, res) => {
 
   try {
     const chat = await Chat.findOne({ _id: req.params.id, userId });
+
     res.status(200).send(chat);
   } catch (err) {
     console.log(err);
     res
       .status(500)
       .send(
-        "Error while fetching chat! Check `api/index.js` under backend folder."
+        "Error while fetching chat! if you are developer of the website check index.js under backend folder"
       );
   }
 });
 
 app.put("/api/chats/:id", requireAuth(), async (req, res) => {
   const userId = req.auth.userId;
-  const { question, answer, img } = req.body;
 
+  const { question, answer, img } = req.body;
   const newItems = [
     ...(question
       ? [{ role: "user", parts: [{ text: question }], ...(img && { img }) }]
@@ -147,7 +154,9 @@ app.put("/api/chats/:id", requireAuth(), async (req, res) => {
       { _id: req.params.id, userId },
       {
         $push: {
-          history: { $each: newItems },
+          history: {
+            $each: newItems,
+          },
         },
       }
     );
@@ -158,7 +167,7 @@ app.put("/api/chats/:id", requireAuth(), async (req, res) => {
     res
       .status(500)
       .send(
-        "Error while updating chat! Check `api/index.js` under backend folder."
+        "Error while adding conversation! if you are developer of the website check index.js under backend folder"
       );
   }
 });
@@ -168,13 +177,13 @@ app.use((err, req, res, next) => {
   res.status(401).send("Unauthenticated!");
 });
 
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../frontend", "index.html"));
+  res.sendFile(path.join(__dirname, "../frontend", "index.html"));
 });
 
-// Ensure MongoDB connection on Vercel
-connect();
-
-export default app; // This is required for Vercel to recognize it
+app.listen(port, () => {
+  connect();
+  console.log("Server running on 3000");
+});

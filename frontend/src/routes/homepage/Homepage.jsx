@@ -5,7 +5,7 @@ import { TypeAnimation } from "react-type-animation";
 import { useState } from "react";
 
 const Homepage = () => {
-  const [typingStatus, setTypingStatus] = useState("human1")
+  const [typingStatus, setTypingStatus] = useState("Human1")
 
   return (
     <div className="homepage">
@@ -37,7 +37,7 @@ const Homepage = () => {
                 "SUG AI: A function with access to its outer scope even after execution.",
                 2000,
                 () => {
-                  setTypingStatus("human2");
+                  setTypingStatus("Human2");
                 },
                 "Priyavarat: What is JSX in React?",
                 2000,
@@ -47,7 +47,7 @@ const Homepage = () => {
                 "SUG AI: JSX lets you write HTML inside JavaScript.",
                 2000,
                 () => {
-                  setTypingStatus("human1");
+                  setTypingStatus("Human1");
                 },
               ]}
               wrapper="span"

@@ -15,12 +15,16 @@ const __dirname = path.dirname(__filename);
 
 app.use(
   cors({
-    origin: ["https://sugai.live", "http://localhost:5173"], // Allow frontend and local dev
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all necessary HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allow necessary headers
-    credentials: true,
+    origin: [
+      "https://sugai.live",
+      "https://sugai-dfylyj3xy-raj-prataps-projects-24aa0aa6.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Clerk-Session"],
+    credentials: true, // Ensure cookies and auth headers are sent
   })
 );
+
 
 
 app.use(express.json());

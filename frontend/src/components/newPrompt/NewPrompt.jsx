@@ -1,7 +1,6 @@
 import "./newPrompt.css";
 import { assets } from "../../assets/assets";
-import { useEffect, useRef, useState } from "react";
-import "./newPrompt.css";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Upload from "../upload/Upload";
 import { IKImage } from "imagekitio-react";
 import model from "../../lib/gemini";
@@ -18,24 +17,27 @@ const NewPrompt = ({ data }) => {
     aiData: {},
   });
 
-  const chat = model.startChat({
-    history: [
-      data?.history.map(({ role, parts }) => ({
-        role,
-        parts: [{ text: parts[0].text }],
-      })),
-    ],
-    generationConfig: {
-      // maxOutputTokens: 100,
-    },
-  });
+  const [chat, setChat] = useState(null);
+  const [, updateState] = useState();
+  const forceUpdate = useCallback(() => updateState({}), []);
 
   const endRef = useRef(null);
   const formRef = useRef(null);
 
   useEffect(() => {
+    console.log("Data History:", data?.history);
     endRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [data, question, answer, img.dbData]);
+    const runEffect = async () => {
+      if (!hasRun.current && data?.history?.length > 0) {
+        await initializeChat();
+        if (chat) {
+          add(data.history[0].parts[0].text, true);
+        }
+      }
+      hasRun.current = true;
+    };
+    runEffect();
+  }, [data]);
 
   const queryClient = useQueryClient();
 
@@ -61,12 +63,7 @@ const NewPrompt = ({ data }) => {
           formRef.current.reset();
           setQuestion("");
           setAnswer("");
-          setImg({
-            isLoading: false,
-            error: "",
-            dbData: {},
-            aiData: {},
-          });
+          setImg({ isLoading: false, error: "", dbData: {}, aiData: {} });
         });
     },
     onError: (err) => {
@@ -74,24 +71,78 @@ const NewPrompt = ({ data }) => {
     },
   });
 
+  const initializeChat = async () => {
+    try {
+      const history =
+        data?.history?.map(({ role, parts }) => ({
+          role,
+          parts: [{ text: parts[0].text }],
+        })) || [];
+
+      if (history.length === 0) {
+        history.push({ role: "user", parts: [{ text: "Hi" }] });
+      } else if (history[0].role !== "user") {
+        history.unshift({ role: "user", parts: [{ text: "Hi" }] });
+      }
+
+      const newChat = model.startChat({
+        history: history,
+        generationConfig: {
+          // maxOutputTokens: 1000,
+        },
+      });
+
+      console.log("New Chat:", newChat); // Added console log
+      setChat(newChat);
+      console.log("Chat initialized:", chat);
+      forceUpdate(); // Force re-render
+    } catch (error) {
+      console.error("Error initializing chat:", error);
+    }
+  };
+
   const add = async (text, isInitial) => {
+    if (!chat) {
+      await initializeChat();
+    }
+
+    if (isInitial) {
+      if (!chat) {
+        console.error("Chat session not initialized.");
+        return;
+      }
+      try {
+        console.log("Sending message:", text);
+        const result = await chat.sendMessage(text);
+        console.log("Response:", result);
+        setAnswer(result.response.text());
+        mutation.mutate();
+      } catch (err) {
+        console.error("Error sending message:", err);
+      }
+      return;
+    }
+
     if (!isInitial) setQuestion(text);
 
     try {
+      console.log("Sending message stream:", text);
       const result = await chat.sendMessageStream(
         Object.entries(img.aiData).length ? [img.aiData, text] : [text]
       );
+      console.log("Response:", result);
       let accumulatedText = "";
       for await (const chunk of result.stream) {
         const chunkText = chunk.text();
         console.log(chunkText);
         accumulatedText += chunkText;
+        console.log("Accumulated Text", accumulatedText);
         setAnswer(accumulatedText);
       }
 
       mutation.mutate();
     } catch (err) {
-      console.log(err);
+      console.error("Error sending message:", err);
     }
   };
 
@@ -104,26 +155,16 @@ const NewPrompt = ({ data }) => {
     add(text, false);
   };
 
-  // IN PRODUCTION WE DON'T NEED IT
   const hasRun = useRef(false);
-  useEffect(() => {
-    if (!hasRun.current) {
-      if (data?.history?.length === 1) {
-        add(data.history[0].parts[0].text, true);
-      }
-    }
-    hasRun.current = true;
-  }, []);
 
   return (
     <>
-      {/* Add new chat */}
       {img.isLoading && <div className="">Loading...</div>}
       {img.dbData?.filePath && (
         <IKImage
           urlEndpoint={import.meta.env.VITE_IMAGE_KIT_ENDPOINT}
           path={img.dbData?.filePath}
-          width="380"
+          width={380}
           transformation={[{ width: 380 }]}
         />
       )}

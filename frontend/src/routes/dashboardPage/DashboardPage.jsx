@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 const DashboardPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  console.log("API URL:", import.meta.env.VITE_API_URL);
+
 
   const mutation = useMutation({
     mutationFn: (text) => {

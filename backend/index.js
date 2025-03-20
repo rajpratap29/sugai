@@ -15,10 +15,13 @@ const __dirname = path.dirname(__filename);
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "https://sugai.live", // Ensure correct CORS setup
+    origin: ["https://sugai.live", "http://localhost:5173"], // Allow frontend and local dev
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow all necessary HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow necessary headers
     credentials: true,
   })
 );
+
 
 app.use(express.json());
 
